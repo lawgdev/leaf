@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import { Project } from "../types";
 
 interface State {
   token: string;
@@ -35,7 +36,7 @@ export class StateManager {
     try {
       const parsedContent = JSON.parse(content);
 
-      return JSON.parse(parsedContent) as State;
+      return parsedContent as State;
     } catch {
       return {
         token: "",
