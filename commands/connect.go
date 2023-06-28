@@ -3,7 +3,9 @@ package commands
 import (
 	"leaf/commands/sources"
 	"leaf/utils"
+	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/urfave/cli/v2"
@@ -66,12 +68,19 @@ var supportSourcesOrder = []string{
 }
 
 func Connect(ctx *cli.Context) error {
-	cmd := exec.Command("vector", "--help")
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "darwin" {
+		cmd = exec.Command("brew", "services", "vector", "--help")
+	} else {
+		cmd = exec.Command("vector", "--help")
+	}
+
 	_, err := cmd.Output()
 
 	if err != nil {
-		println("Vector does not exist, please install at https://vector.dev/docs/setup/installation/")
-		return err
+		println("Unable to find Vector! Please install it at: https://vector.dev/docs/setup/installation")
+		os.Exit(0)
 	}
 
 	state, err := utils.GetState()

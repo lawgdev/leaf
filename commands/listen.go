@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 
 	"github.com/urfave/cli/v2"
 )
@@ -16,7 +17,13 @@ func Listen(ctx *cli.Context) error {
 		return fmt.Errorf("failed to get user's home directory: %v", err)
 	}
 
-	cmd := exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
+	var cmd *exec.Cmd
+
+	if runtime.GOOS == "darwin" {
+		cmd = exec.Command("brew", "services", "start", "vector", homePath+"/.leaf/configs/*.toml")
+	} else {
+		cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
+	}
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
