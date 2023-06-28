@@ -1,3 +1,4 @@
+import axios, { AxiosRequestConfig } from "axios";
 import { env } from "@leaf/utils/env";
 import { StateManager } from "./stateManager";
 
@@ -21,13 +22,6 @@ type APIError = {
   message: string;
 };
 
-/**
- * Make a HTTP request to the Lawg API
- * @param endpoint The API route to call excluding the version discriminator (e.g. auth/login)
- * @param options HTTP Method, request body and other options
-
- * @returns APIResponse object with the data or error.
- */
 export const makeRequest = async <T = any>(
   method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" | "HEAD",
   endpoint: string,
@@ -47,40 +41,47 @@ export const makeRequest = async <T = any>(
       throw new Error("GET requests cannot have a body");
     }
 
-    const response: APIResponse<T> = await fetch(env.API_URL_V1 + endpoint, {
+    const config: AxiosRequestConfig = {
       method,
       headers,
-      credentials: "include",
-      body: body ? JSON.stringify(body ?? {}) : null,
-    }).then(async (res) =>
-      res.status === 204
-        ? { success: true }
-        : res
-            .json()
-            .then((json) =>
-              res.status >= 300
-                ? {
-                    ...json,
-                    error: {
-                      code: json.error.code,
-                      message: json.error.message,
-                    },
-                  }
-                : json
-            )
-            .catch(() =>
-              res.status >= 300 ? { success: false } : { success: true }
-            )
-    );
+      withCredentials: true,
+      data: body ? JSON.stringify(body ?? {}) : undefined,
+    };
 
-    return (
-      response || {
-        success: false,
-        error: { code: "internal_scoped_error", message: "Unknown error" },
-      }
-    );
+    const response = await axios(env.API_URL_V1 + endpoint, config);
+
+    if (response.status === 204) {
+      return { success: true };
+    }
+
+    const responseData: APIResponse<T> = response.data;
+
+    if (response.status >= 300) {
+      console.log(responseData);
+      return {
+        ...responseData,
+        error: {
+          code: responseData?.error?.code ?? "internal_scoped_error",
+          message: responseData?.error?.message ?? "Unknown error",
+        },
+      };
+    }
+
+    return responseData;
   } catch (error) {
-    console.error(error);
+    // @ts-ignore todo: type this xD
+    if ("response" in error && error.response.data) {
+      // Tod: remove this any
+      const responseData = (error.response as any).data as APIResponse<T>;
+
+      return {
+        success: false,
+        error: {
+          code: responseData?.error?.code ?? "internal_scoped_error",
+          message: responseData?.error?.message ?? "Unknown error",
+        },
+      };
+    }
 
     return {
       success: false,

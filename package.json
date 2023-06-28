@@ -6,7 +6,7 @@
   "author": "Cody Miller <50378828+Looskie@users.noreply.github.com>",
   "license": "MIT",
   "bin": {
-    "leaf": "./dist/index.js"
+    "leaf": "./dist/src/index.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json && tsc-alias -p tsconfig.json",
@@ -27,13 +27,17 @@
       "node16-linux-x64",
       "node16-macos-x64",
       "node16-win-x64"
+    ],
+    "assets": [
+      "node_modules/**/*"
     ]
   },
   "dependencies": {
     "@inquirer/prompts": "^2.2.0",
+    "axios": "^1.4.0",
     "commander": "^11.0.0",
     "dockerode": "^3.3.5",
-    "ora": "^6.3.1",
+    "ora": "5.0.0",
     "shelljs": "^0.8.5",
     "zod": "^3.21.4"
   }
