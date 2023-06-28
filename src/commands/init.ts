@@ -18,17 +18,20 @@ export default async function () {
       Authorization: `Bearer ${token}`,
     },
   });
-  fetchingUserOra.stop();
 
   if (!success || !data) {
-    console.error(
-      error?.code === "unauthorized"
-        ? "Invalid token"
-        : error?.message ?? "An unknown error occurred"
+    fetchingUserOra.fail(
+      `Failed to authorize with lawg.dev: ${
+        error?.code === "unauthorized"
+          ? "Invalid token"
+          : error?.message ?? "An unknown error occurred"
+      }`
     );
+
     return;
   }
 
+  fetchingUserOra.succeed("Authorized with lawg.dev");
   StateManager.setState({ token });
 
   console.log(`Logged in as ${data.user.username} (${data.user.email})`);
