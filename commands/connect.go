@@ -53,6 +53,18 @@ var supportedSources = map[string]Source{
 	},
 }
 
+var supportSourcesOrder = []string{
+	"docker_logs",
+	"kubernetes_logs",
+	"amqp",
+	"redis",
+	"aws_ecs_metrics",
+	"aws_s3",
+	"aws_sqs",
+	"file",
+	"syslog",
+}
+
 func Connect(ctx *cli.Context) error {
 	cmd := exec.Command("vector", "--help")
 	_, err := cmd.Output()
@@ -132,8 +144,8 @@ func Connect(ctx *cli.Context) error {
 	}
 
 	var sourceNames = []string{}
-	for _, source := range supportedSources {
-		sourceNames = append(sourceNames, source.Name)
+	for _, k := range supportSourcesOrder {
+		sourceNames = append(sourceNames, supportedSources[k].Name)
 	}
 
 	var selectedSourceName = ""
