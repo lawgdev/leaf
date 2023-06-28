@@ -5,7 +5,6 @@ import (
 	"leaf/utils"
 	"os"
 	"os/exec"
-	"runtime"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/urfave/cli/v2"
@@ -68,13 +67,7 @@ var supportSourcesOrder = []string{
 }
 
 func Connect(ctx *cli.Context) error {
-	var cmd *exec.Cmd
-
-	if runtime.GOOS == "darwin" {
-		cmd = exec.Command("brew", "services", "vector", "--help")
-	} else {
-		cmd = exec.Command("vector", "--help")
-	}
+	var cmd = exec.Command("vector", "--help")
 
 	_, err := cmd.Output()
 
