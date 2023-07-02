@@ -33,6 +33,11 @@ func main() {
 				Usage:   "Listen to your application feeds on lawg",
 				Action:  commands.Listen,
 			},
+			{
+				Name:   "upstart",
+				Usage:  "Configure lawg to start on systemctl",
+				Action: commands.Upstart,
+			},
 		},
 	}
 
