@@ -22,13 +22,14 @@ func Login(ctx *cli.Context) error {
 			spinner.UpdateMessage("Invalid token, please use a valid API or session token.")
 			utils.Spinner.Stop()
 
-			return nil
+			return cli.Exit("", 1)
 		}
 
 		spinner.Error()
 		spinner.UpdateMessage(err.Error())
 		utils.Spinner.Stop()
-		return nil
+
+		return cli.Exit("", 1)
 	}
 
 	err = utils.SetState(utils.PartialState{
@@ -36,8 +37,7 @@ func Login(ctx *cli.Context) error {
 	})
 
 	if err != nil {
-		println("Error: " + err.Error())
-		return nil
+		return cli.Exit("Failed to save state", 1)
 	}
 
 	var user = me.Data.User

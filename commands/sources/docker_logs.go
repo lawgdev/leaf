@@ -10,6 +10,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
+	"github.com/urfave/cli/v2"
 )
 
 func generateConfig(source, includeContainer, project, feed, token string) string {
@@ -17,25 +18,20 @@ func generateConfig(source, includeContainer, project, feed, token string) strin
 %s
 include_containers = [ "%s" ]
 
-[sinks.lawg_sink]
-type = "http"
-encoding.codec = "json"
-inputs = ["source0"]
-uri = "http://100.127.114.55:8080/v1/projects/%s/feeds/%s/logs"
-auth.strategy = "bearer"
-auth.token = "%s"
-`, strings.TrimSpace(source), includeContainer, project, feed, token)
+%s
+`, strings.TrimSpace(source), includeContainer, utils.DefaultConfig(project, feed, token))
 }
 
-func DockerLogs(feed utils.Feed, project utils.Project) {
+func DockerLogs(feed utils.Feed, project utils.Project) error {
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		panic(err)
+		cli.Exit("Failed to connect to Docker daemon", 1)
 	}
 
 	containers, err := client.ContainerList(context.Background(), types.ContainerListOptions{})
+
 	if err != nil {
-		panic(err)
+		cli.Exit("Failed to list containers", 1)
 	}
 
 	var containerNames = []string{}
@@ -56,8 +52,7 @@ func DockerLogs(feed utils.Feed, project utils.Project) {
 	stringedVectorGeneratedConfig := string(vectorGeneratedConfig[:])
 
 	if err != nil {
-		println("Vector does not exist, please install at https://vector.dev/docs/setup/installation/")
-		return
+		cli.Exit("Failed to generate config", 1)
 	}
 
 	lines := strings.Split(stringedVectorGeneratedConfig, "\n")
@@ -67,17 +62,17 @@ func DockerLogs(feed utils.Feed, project utils.Project) {
 
 	state, err := utils.GetState()
 	if err != nil {
-		println("Error: " + err.Error())
-		return
+		cli.Exit("Failed to get state", 1)
 	}
 
 	config := generateConfig(stringedVectorGeneratedConfig, selectedContainer, project.Namespace, feed.Name, state.Token)
 
 	finalPath, err := utils.WriteToPath(fmt.Sprintf("configs/%s-%s.toml", feed.Name, selectedContainer), config)
 	if err != nil {
-		fmt.Println("Failed to write config file:", err)
-		return
+		cli.Exit("Failed to write config", 1)
 	}
 
 	fmt.Println("Config generated and saved to", finalPath)
+
+	return nil
 }

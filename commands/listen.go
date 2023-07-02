@@ -13,22 +13,22 @@ import (
 func Listen(ctx *cli.Context) error {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
-		return fmt.Errorf("failed to get user's home directory: %v", err)
+		return cli.Exit("Failed to get home directory", 1)
 	}
 
 	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		log.Fatal(err)
+		return cli.Exit("Failed to get stdout pipe", 1)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		log.Fatal(err)
+		return cli.Exit("Failed to get stderr pipe", 1)
 	}
 
 	if err := cmd.Start(); err != nil {
-		log.Fatal(err)
+		return cli.Exit("Failed to start command", 1)
 	}
 
 	go printOutput(stdout)
@@ -36,7 +36,7 @@ func Listen(ctx *cli.Context) error {
 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
-		log.Fatal(err)
+		return cli.Exit("Failed to wait for command", 1)
 	}
 
 	return nil
@@ -50,8 +50,10 @@ func printOutput(pipe io.Reader) {
 			if err != io.EOF {
 				log.Println(err)
 			}
+
 			return
 		}
+
 		fmt.Print(string(buf[:n]))
 	}
 }

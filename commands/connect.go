@@ -12,7 +12,7 @@ import (
 
 type Source struct {
 	Name    string
-	Handler func(feed utils.Feed, project utils.Project)
+	Handler func(feed utils.Feed, project utils.Project) error
 }
 
 var supportedSources = map[string]Source{
@@ -163,7 +163,5 @@ func Connect(ctx *cli.Context) error {
 		}
 	}
 
-	selectedSource.Handler(selectedFeed, selectedProject)
-
-	return nil
+	return selectedSource.Handler(selectedFeed, selectedProject)
 }
