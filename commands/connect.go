@@ -3,7 +3,6 @@ package commands
 import (
 	"leaf/commands/sources"
 	"leaf/utils"
-	"os"
 	"os/exec"
 
 	"github.com/AlecAivazis/survey/v2"
@@ -70,17 +69,13 @@ func Connect(ctx *cli.Context) error {
 	var cmd = exec.Command("vector", "--help")
 
 	_, err := cmd.Output()
-
 	if err != nil {
-		println("Unable to find Vector! Please install it at: https://vector.dev/docs/setup/installation")
-		os.Exit(0)
+		return utils.ParsedError(err, "Unable to find Vector! Please install it at: https://vector.dev/docs/setup/installation")
 	}
 
 	state, err := utils.GetState()
-
 	if err != nil {
-		println("Error: " + err.Error())
-		return err
+		return utils.ParsedError(err, "Unable to get state", true)
 	}
 
 	projectSpinner := utils.Spinner.AddSpinner("Fetching Projects")

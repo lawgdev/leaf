@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"leaf/utils"
 	"os"
 	"runtime"
 
@@ -39,14 +40,14 @@ func macOS(c *cli.Context) error {
 
 	f, err := os.Create("/Library/LaunchDaemons/dev.lawg.leaf.plist")
 	if err != nil {
-		return cli.Exit("Failed to create launchd config", 1)
+		return utils.ParsedError(err, "Failed to create launchd config", true)
 	}
 
 	defer f.Close()
 
 	_, err = f.WriteString(launchdConfig)
 	if err != nil {
-		return cli.Exit("Failed to write launchd config", 1)
+		return utils.ParsedError(err, "Failed to write launchd config", true)
 	}
 
 	return nil
@@ -54,7 +55,7 @@ func macOS(c *cli.Context) error {
 
 func ubuntu(c *cli.Context) error {
 	if _, err := os.Stat("/lib/systemd"); os.IsNotExist(err) {
-		return cli.Exit("This command is only available on Ubuntu 6.10 and higher.", 1)
+		return utils.ParsedError(err, "This command is only available on Ubuntu 6.10 and higher.", true)
 	}
 
 	var systemCtlConfig = `
@@ -75,14 +76,14 @@ WantedBy=multi-user.target
 
 	f, err := os.Create("/lib/systemd/system/leaf.service")
 	if err != nil {
-		return cli.Exit("Failed to create upstart config", 1)
+		return utils.ParsedError(err, "Failed to create systemctl config", true)
 	}
 
 	defer f.Close()
 
 	_, err = f.WriteString(systemCtlConfig)
 	if err != nil {
-		return cli.Exit("Failed to write systemctl config", 1)
+		return utils.ParsedError(err, "Failed to write systemctl config", true)
 	}
 	return nil
 }

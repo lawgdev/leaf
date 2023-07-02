@@ -37,7 +37,7 @@ func Login(ctx *cli.Context) error {
 	})
 
 	if err != nil {
-		return cli.Exit("Failed to save state", 1)
+		return utils.ParsedError(err, "Failed to save state", true)
 	}
 
 	var user = me.Data.User

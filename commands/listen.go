@@ -3,6 +3,7 @@ package commands
 import (
 	"fmt"
 	"io"
+	"leaf/utils"
 	"log"
 	"os"
 	"os/exec"
@@ -13,22 +14,22 @@ import (
 func Listen(ctx *cli.Context) error {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
-		return cli.Exit("Failed to get home directory", 1)
+		return utils.ParsedError(err, "Failed to get home directory", true)
 	}
 
 	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return cli.Exit("Failed to get stdout pipe", 1)
+		return utils.ParsedError(err, "Failed to get stdout pipe", true)
 	}
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return cli.Exit("Failed to get stderr pipe", 1)
+		return utils.ParsedError(err, "Failed to get stderr pipe", true)
 	}
 
 	if err := cmd.Start(); err != nil {
-		return cli.Exit("Failed to start command", 1)
+		return utils.ParsedError(err, "Failed to start command", true)
 	}
 
 	go printOutput(stdout)
@@ -36,7 +37,7 @@ func Listen(ctx *cli.Context) error {
 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
-		return cli.Exit("Failed to wait for command", 1)
+		return utils.ParsedError(err, "Failed to wait for command", true)
 	}
 
 	return nil

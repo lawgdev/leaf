@@ -10,7 +10,6 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/client"
-	"github.com/urfave/cli/v2"
 )
 
 func generateConfig(source, includeContainer, project, feed, token string) string {
@@ -25,13 +24,13 @@ include_containers = [ "%s" ]
 func DockerLogs(feed utils.Feed, project utils.Project) error {
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
-		cli.Exit("Failed to connect to Docker daemon", 1)
+		return utils.ParsedError(err, "Failed to connect to Docker daemon", true)
 	}
 
 	containers, err := client.ContainerList(context.Background(), types.ContainerListOptions{})
 
 	if err != nil {
-		cli.Exit("Failed to list containers", 1)
+		return utils.ParsedError(err, "Failed to list containers", true)
 	}
 
 	var containerNames = []string{}
@@ -52,7 +51,7 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 	stringedVectorGeneratedConfig := string(vectorGeneratedConfig[:])
 
 	if err != nil {
-		cli.Exit("Failed to generate config", 1)
+		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 
 	lines := strings.Split(stringedVectorGeneratedConfig, "\n")
@@ -62,14 +61,14 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 
 	state, err := utils.GetState()
 	if err != nil {
-		cli.Exit("Failed to get state", 1)
+		return utils.ParsedError(err, "Failed to get state", true)
 	}
 
 	config := generateConfig(stringedVectorGeneratedConfig, selectedContainer, project.Namespace, feed.Name, state.Token)
 
 	finalPath, err := utils.WriteToPath(fmt.Sprintf("configs/%s-%s.toml", feed.Name, selectedContainer), config)
 	if err != nil {
-		cli.Exit("Failed to write config", 1)
+		return utils.ParsedError(err, "Failed to write config", true)
 	}
 
 	fmt.Println("Config generated and saved to", finalPath)
