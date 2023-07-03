@@ -48,11 +48,11 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 
 	cmd := exec.Command("vector", "generate", "docker_logs")
 	vectorGeneratedConfig, err := cmd.Output()
-	stringedVectorGeneratedConfig := string(vectorGeneratedConfig[:])
-
 	if err != nil {
 		return utils.ParsedError(err, "Failed to generate config", true)
 	}
+
+	stringedVectorGeneratedConfig := string(vectorGeneratedConfig[:])
 
 	lines := strings.Split(stringedVectorGeneratedConfig, "\n")
 	lines = lines[2:] // remove first 2 lines of generatedConfig (irrelevant to config)

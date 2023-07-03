@@ -21,35 +21,31 @@ var supportedSources = map[string]Source{
 	},
 	"kubernetes_logs": {
 		Name:    "Kubernetes Logs",
-		Handler: sources.DockerLogs,
+		Handler: sources.KubernetesLogs,
 	},
 	"amqp": {
 		Name:    "AMQP",
-		Handler: sources.DockerLogs,
+		Handler: sources.AMQP,
 	},
 	"redis": {
 		Name:    "Redis",
-		Handler: sources.DockerLogs,
+		Handler: sources.Redis,
 	},
 	"aws_ecs_metrics": {
 		Name:    "AWS ECS Metrics",
-		Handler: sources.DockerLogs,
+		Handler: sources.AwsECSMetrics,
 	},
 	"aws_s3": {
 		Name:    "AWS S3",
-		Handler: sources.DockerLogs,
-	},
-	"aws_sqs": {
-		Name:    "AWS SQS",
-		Handler: sources.DockerLogs,
+		Handler: sources.AwsS3,
 	},
 	"file": {
 		Name:    "File",
-		Handler: sources.DockerLogs,
+		Handler: sources.File,
 	},
 	"syslog": {
 		Name:    "Syslog",
-		Handler: sources.DockerLogs,
+		Handler: sources.Syslog,
 	},
 }
 
@@ -60,7 +56,6 @@ var supportSourcesOrder = []string{
 	"redis",
 	"aws_ecs_metrics",
 	"aws_s3",
-	"aws_sqs",
 	"file",
 	"syslog",
 }
