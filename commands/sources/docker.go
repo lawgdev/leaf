@@ -12,15 +12,6 @@ import (
 	"github.com/docker/docker/client"
 )
 
-func generateConfig(source, includeContainer, project, feed, token string) string {
-	return fmt.Sprintf(`
-%s
-include_containers = [ "%s" ]
-
-%s
-`, strings.TrimSpace(source), includeContainer, utils.DefaultConfig(project, feed, token))
-}
-
 func DockerLogs(feed utils.Feed, project utils.Project) error {
 	client, err := client.NewClientWithOpts(client.FromEnv)
 	if err != nil {
@@ -59,19 +50,10 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 
 	stringedVectorGeneratedConfig = strings.Join(lines, "\n")
 
-	state, err := utils.GetState()
-	if err != nil {
-		return utils.ParsedError(err, "Failed to get state", true)
+	if err := utils.GenerateConfig(fmt.Sprintf(`%s
+include_containers = [ "%s" ]`, stringedVectorGeneratedConfig, selectedContainer), fmt.Sprintf("%s-docker-logs", feed.Name), project.Namespace, feed.Name); err != nil {
+		return utils.ParsedError(err, "Failed to generate config", true)
 	}
-
-	config := generateConfig(stringedVectorGeneratedConfig, selectedContainer, project.Namespace, feed.Name, state.Token)
-
-	finalPath, err := utils.WriteToPath(fmt.Sprintf("configs/%s-%s.toml", feed.Name, selectedContainer), config)
-	if err != nil {
-		return utils.ParsedError(err, "Failed to write config", true)
-	}
-
-	fmt.Println("Config generated and saved to", finalPath)
 
 	return nil
 }

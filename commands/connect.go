@@ -83,7 +83,7 @@ func Connect(ctx *cli.Context) error {
 		projectSpinner.UpdateMessage(err.Error())
 		utils.Spinner.Stop()
 
-		return err
+		return cli.Exit("", 1)
 	}
 
 	projectSpinner.UpdateMessage("Fetched Projects")

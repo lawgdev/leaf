@@ -17,6 +17,13 @@ func Listen(ctx *cli.Context) error {
 		return utils.ParsedError(err, "Failed to get home directory", true)
 	}
 
+	_, err = utils.GetOriginsFromConfigs()
+	if err != nil {
+		return utils.ParsedError(err, "Failed to get listenable configs", true)
+	}
+
+	// Connect to websocket
+
 	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
 
 	stdout, err := cmd.StdoutPipe()

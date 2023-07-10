@@ -16,11 +16,6 @@ func File(feed utils.Feed, project utils.Project) error {
 		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 
-	state, err := utils.GetState()
-	if err != nil {
-		return utils.ParsedError(err, "Failed to get state", true)
-	}
-
 	var includePaths = []string{}
 	var askForPaths = true
 
@@ -73,16 +68,9 @@ func File(feed utils.Feed, project utils.Project) error {
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "include = [\"/var/log/**/*.log\"]", "include = [\""+strings.Join(includePaths, "\", \"")+"\"]", 1)
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "exclude = []", "exclude = [\""+strings.Join(excludePaths, "\", \"")+"\"]", 1)
 
-	config := fmt.Sprintf(`
-%s
-
-%s`, parsedVectorConfig, utils.DefaultConfig(project.Namespace, feed.Name, state.Token))
-
-	finalPath, err := utils.WriteToPath(fmt.Sprintf("configs/%s-file.toml", feed.Name), config)
-	if err != nil {
-		return utils.ParsedError(err, "Failed to write config", true)
+	if err := utils.GenerateConfig(parsedVectorConfig, fmt.Sprintf("%s-file", feed.Name), project.Namespace, feed.Name); err != nil {
+		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 
-	fmt.Println("Config generated and saved to", finalPath)
 	return nil
 }

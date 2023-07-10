@@ -2,23 +2,10 @@ package utils
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 )
-
-func DefaultConfig(project, feed, token string) string {
-	return fmt.Sprintf(`
-[sinks.lawg_sink]
-type = "http"
-encoding.codec = "json"
-inputs = ["source0"]
-uri = "http://100.127.114.55:8080/v1/projects/%s/feeds/%s/logs"
-auth.strategy = "bearer"
-auth.token = "%s"
-`, project, feed, token)
-}
 
 type State struct {
 	Token        string

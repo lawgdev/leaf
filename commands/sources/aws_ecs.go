@@ -16,11 +16,6 @@ func AwsECSMetrics(feed utils.Feed, project utils.Project) error {
 		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 
-	state, err := utils.GetState()
-	if err != nil {
-		return utils.ParsedError(err, "Failed to get state", true)
-	}
-
 	// ask for endpoint URL
 	var endpoint = ""
 	survey.AskOne(&survey.Input{
@@ -39,16 +34,9 @@ func AwsECSMetrics(feed utils.Feed, project utils.Project) error {
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "http://169.254.170.2/v2", endpoint, 1)
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "namespace = \"awsecs\"", fmt.Sprintf("namespace = \"%s\"", namespace), 1)
 
-	config := fmt.Sprintf(`
-%s
-
-%s`, parsedVectorConfig, utils.DefaultConfig(project.Namespace, feed.Name, state.Token))
-
-	finalPath, err := utils.WriteToPath(fmt.Sprintf("configs/%s-aws-ecs%s.toml", feed.Name, namespace), config)
-	if err != nil {
-		return utils.ParsedError(err, "Failed to write config", true)
+	if err := utils.GenerateConfig(parsedVectorConfig, fmt.Sprintf("%s-aws-ecs%s", feed.Name, namespace), project.Namespace, feed.Name); err != nil {
+		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 
-	fmt.Println("Config generated and saved to", finalPath)
 	return nil
 }
