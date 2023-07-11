@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
 	github.com/chelnak/ysmrr v0.3.0
-	github.com/docker/docker v24.0.2+incompatible
+	github.com/docker/docker v24.0.4+incompatible
 	github.com/gorilla/websocket v1.5.0
 	github.com/imroc/req/v3 v3.37.2
 	github.com/urfave/cli/v2 v2.25.7
