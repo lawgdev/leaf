@@ -1,10 +1,9 @@
 package main
 
 import (
+	"leaf/commands"
 	"log"
 	"os"
-
-	"leaf/commands"
 
 	"github.com/urfave/cli/v2"
 )

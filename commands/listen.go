@@ -1,8 +1,9 @@
 package commands
 
 import (
-	"fmt"
+	"encoding/json"
 	"io"
+	"leaf/twig"
 	"leaf/utils"
 	"log"
 	"os"
@@ -22,7 +23,13 @@ func Listen(ctx *cli.Context) error {
 		return utils.ParsedError(err, "Failed to get listenable configs", true)
 	}
 
+	state, err := utils.GetState()
+	if err != nil {
+		return utils.ParsedError(err, "Failed to get state", true)
+	}
+
 	// Connect to websocket
+	var twigClient = twig.Connect(state.Token)
 
 	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
 
@@ -39,8 +46,8 @@ func Listen(ctx *cli.Context) error {
 		return utils.ParsedError(err, "Failed to start command", true)
 	}
 
-	go printOutput(stdout)
-	go printOutput(stderr)
+	go printOutput(stdout, twigClient)
+	go printOutput(stderr, twigClient)
 
 	// Wait for the command to finish
 	if err := cmd.Wait(); err != nil {
@@ -50,7 +57,7 @@ func Listen(ctx *cli.Context) error {
 	return nil
 }
 
-func printOutput(pipe io.Reader) {
+func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 	buf := make([]byte, 1024)
 	for {
 		n, err := pipe.Read(buf)
@@ -62,6 +69,23 @@ func printOutput(pipe io.Reader) {
 			return
 		}
 
-		fmt.Print(string(buf[:n]))
+		var message = string(buf[:n])
+
+		// check if message is parseable into a json object
+		var obj map[string]interface{}
+		if err := json.Unmarshal([]byte(message), &obj); err != nil {
+			println("not parsable")
+			continue
+		}
+
+		twigClient.WS.WriteJSON(twig.CreateLogMessage{
+			Op: 5,
+			Data: twig.CreateLogData{
+				Message:          message,
+				Level:            "info",
+				ProjectNamespace: "test",
+				FeedName:         "test",
+			},
+		})
 	}
 }
