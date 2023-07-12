@@ -12,13 +12,20 @@ import (
 	"github.com/urfave/cli/v2"
 )
 
+type VectorMessage struct {
+	FeedName  string `json:"feed_name"`
+	Level     string `json:"level"`
+	Message   string `json:"message"`
+	Namespace string `json:"namespace"`
+}
+
 func Listen(ctx *cli.Context) error {
 	homePath, err := os.UserHomeDir()
 	if err != nil {
 		return utils.ParsedError(err, "Failed to get home directory", true)
 	}
 
-	_, err = utils.GetOriginsFromConfigs()
+	origins, err := utils.GetOriginsFromConfigs()
 	if err != nil {
 		return utils.ParsedError(err, "Failed to get listenable configs", true)
 	}
@@ -29,8 +36,7 @@ func Listen(ctx *cli.Context) error {
 	}
 
 	// Connect to websocket
-	var twigClient = twig.Connect(state.Token)
-
+	var twigClient = twig.Connect(state.Token, origins)
 	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
 
 	stdout, err := cmd.StdoutPipe()
@@ -71,20 +77,20 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 
 		var message = string(buf[:n])
 
-		// check if message is parseable into a json object
-		var obj map[string]interface{}
+		var obj VectorMessage
 		if err := json.Unmarshal([]byte(message), &obj); err != nil {
-			println("not parsable")
 			continue
 		}
 
 		twigClient.WS.WriteJSON(twig.CreateLogMessage{
 			Op: 5,
 			Data: twig.CreateLogData{
-				Message:          message,
-				Level:            "info",
-				ProjectNamespace: "test",
-				FeedName:         "test",
+				Message:   obj.Message,
+				Level:     obj.Level,
+				Namespace: obj.Namespace,
+				FeedName:  obj.FeedName,
+				// Todo: make this real data
+				Source: "docker_logs",
 			},
 		})
 	}

@@ -13,7 +13,7 @@ type Twig struct {
 	Token string
 }
 
-func Connect(token string) *Twig {
+func Connect(token string, listeningTo []string) *Twig {
 	client := websocket.Dialer{}
 
 	conn, _, err := client.Dial("ws://100.105.87.12:4000/ws", nil)
@@ -21,6 +21,8 @@ func Connect(token string) *Twig {
 		utils.ParsedError(err, "Could not connect to twig", true)
 		return nil
 	}
+
+	println("Connected to twig")
 
 	_, message, err := conn.ReadMessage()
 	if err != nil {
@@ -44,13 +46,19 @@ func Connect(token string) *Twig {
 	if err := conn.WriteJSON(AuthMessage{
 		Op: 2,
 		Data: struct {
-			Token string "json:\"token\""
+			Token       string   "json:\"token\""
+			Hostname    string   "json:\"hostname\""
+			ListeningTo []string "json:\"listening_to\""
 		}{
-			Token: token,
+			Token:       token,
+			Hostname:    "leaf",
+			ListeningTo: listeningTo,
 		},
 	}); err != nil {
 		utils.ParsedError(err, "Could not auth to twig", true)
 	}
+
+	println("Authenticated to twig")
 
 	go readMessage(*conn)
 	go heartbeat(*conn, time.Duration(holaMessage.Data.HeartbeatInterval)*time.Millisecond)
@@ -67,11 +75,13 @@ func readMessage(conn websocket.Conn) {
 		var message GenericTwigMessage
 		if err := conn.ReadJSON(&message); err != nil {
 			utils.ParsedError(err, "Could not read message from twig", true)
+
+			panic(err)
 		}
 
 		switch message.Op {
 		case 0:
-			println("dispatch", message.Event, string(string(message.Data)))
+			println("dispatch", message.Event, string(message.Data))
 
 		case 1:
 			println("hola", string(message.Data))
@@ -90,6 +100,9 @@ func heartbeat(conn websocket.Conn, interval time.Duration) {
 		time.Sleep(interval)
 		if err := conn.WriteJSON(map[string]interface{}{
 			"op": 3,
+			"d": map[string]interface{}{
+				"sent_at": time.Now().UnixMilli(),
+			},
 		}); err != nil {
 			utils.ParsedError(err, "Could not start heartbeat to twig", true)
 		}

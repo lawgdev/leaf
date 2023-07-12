@@ -13,7 +13,7 @@ import (
 )
 
 func DockerLogs(feed utils.Feed, project utils.Project) error {
-	client, err := client.NewClientWithOpts(client.FromEnv)
+	client, err := client.NewClientWithOpts(client.FromEnv, client.WithAPIVersionNegotiation())
 	if err != nil {
 		return utils.ParsedError(err, "Failed to connect to Docker daemon", true)
 	}
@@ -51,7 +51,7 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 	stringedVectorGeneratedConfig = strings.Join(lines, "\n")
 
 	if err := utils.GenerateConfig(fmt.Sprintf(`%s
-include_containers = [ "%s" ]`, stringedVectorGeneratedConfig, selectedContainer), fmt.Sprintf("%s-docker-logs", feed.Name), project.Namespace, feed.Name); err != nil {
+include_containers = [ "%s" ]`, stringedVectorGeneratedConfig, selectedContainer), fmt.Sprintf("%s-%s-docker-logs", feed.Name, selectedContainer), project.Namespace, feed.Name); err != nil {
 		return utils.ParsedError(err, "Failed to generate config", true)
 	}
 

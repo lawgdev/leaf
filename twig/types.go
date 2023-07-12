@@ -18,7 +18,9 @@ type HolaMessage struct {
 type AuthMessage struct {
 	Op   int8 `json:"op"`
 	Data struct {
-		Token string `json:"token"`
+		Token       string   `json:"token"`
+		Hostname    string   `json:"hostname"`
+		ListeningTo []string `json:"listening_to"`
 	} `json:"d"`
 }
 
@@ -28,8 +30,9 @@ type CreateLogMessage struct {
 }
 
 type CreateLogData struct {
-	Message          string `json:"message"`
-	Level            string `json:"level"`
-	ProjectNamespace string `json:"project_namespace"`
-	FeedName         string `json:"feed_name"`
+	Message   string `json:"message"`
+	Level     string `json:"level"`
+	Namespace string `json:"namespace"`
+	FeedName  string `json:"feed_name"`
+	Source    string `json:"source"`
 }

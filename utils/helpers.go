@@ -21,9 +21,13 @@ inputs = []
 source = '''
 message = .message
 level = "info"
+namespace = .project_namespace
+feed_name = .feed_name
 . = {}
 .message = message
 .level = level
+.namespace = namespace
+.feed_name = feed_name
 '''
 
 [sinks.lawg_sink]
@@ -36,7 +40,8 @@ inputs = ["lawg_transform"]
 		return err
 	}
 
-	finalPath, err := WriteToPath(fmt.Sprintf("./configs/%s.toml", sourceName), fmt.Sprintf(`%s
+	finalPath, err := WriteToPath(fmt.Sprintf("./configs/%s.toml", sourceName), fmt.Sprintf(`#%s:%s
+%s
 
 [transforms.%s-transform]
 type = "remap"
@@ -45,7 +50,7 @@ source = '''
 .project_namespace = "%s"
 .feed_name = "%s"
 '''
-`, strings.Replace(config, "source0", sourceName, 1), sourceName, sourceName, projectNamespace, feedName))
+`, projectNamespace, feedName, strings.Replace(config, "source0", sourceName, 1), sourceName, sourceName, projectNamespace, feedName))
 
 	if err != nil {
 		return err
@@ -56,7 +61,6 @@ source = '''
 	}
 
 	fmt.Println("Config generated and saved to " + finalPath)
-
 	return nil
 }
 
@@ -70,11 +74,9 @@ func AddSourceToSink(sourceName string) error {
 	inputsLine := lines[2]
 	inputsLine = inputsLine[:len(inputsLine)-1]
 
-	println(inputsLine)
 	if inputsLine == "inputs = [" {
 		lines[2] = fmt.Sprintf("%s\"%s-transform\"]", inputsLine, sourceName)
 	} else {
-		println("meow")
 		lines[2] = fmt.Sprintf("%s, \"%s-transform\"]", inputsLine, sourceName)
 	}
 

@@ -97,6 +97,10 @@ func GetOriginsFromConfigs() ([]string, error) {
 	entries, err := WalkMatch(os.Getenv("HOME")+"/.leaf/configs/", "*.toml")
 
 	for _, entry := range entries {
+		if strings.Contains(entry, "sinks.toml") {
+			continue
+		}
+
 		contents, err := GetFileContents(entry)
 		if err != nil {
 			return nil, err
