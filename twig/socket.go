@@ -81,13 +81,13 @@ func readMessage(conn websocket.Conn) {
 
 		switch message.Op {
 		case 0:
-			println("dispatch", message.Event, string(message.Data))
+			// Dispatch event
 
 		case 1:
-			println("hola", string(message.Data))
+			// Hola event
 
 		case 4:
-			println("heartbeat ack", string(message.Data))
+			println("Heartbeat acknowledged", string(message.Data))
 
 		default:
 			println("unknown packet", string(message.Data))
