@@ -3,6 +3,7 @@ package twig
 import (
 	"encoding/json"
 	"leaf/utils"
+	"os"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -18,8 +19,7 @@ func Connect(token string, listeningTo []string) *Twig {
 
 	conn, _, err := client.Dial("ws://100.105.87.12:4000/ws", nil)
 	if err != nil {
-		utils.ParsedError(err, "Could not connect to twig", true)
-		return nil
+		panic(utils.ParsedError(err, "Could not connect to twig", true).Error())
 	}
 
 	println("Connected to twig")
@@ -42,6 +42,11 @@ func Connect(token string, listeningTo []string) *Twig {
 		return nil
 	}
 
+	hostname, err := os.Hostname()
+	if err != nil {
+		hostname = "unknown"
+	}
+
 	// lets auth ourselves now
 	if err := conn.WriteJSON(AuthMessage{
 		Op: 2,
@@ -51,7 +56,7 @@ func Connect(token string, listeningTo []string) *Twig {
 			ListeningTo []string "json:\"listening_to\""
 		}{
 			Token:       token,
-			Hostname:    "leaf",
+			Hostname:    hostname,
 			ListeningTo: listeningTo,
 		},
 	}); err != nil {
@@ -71,20 +76,28 @@ func Connect(token string, listeningTo []string) *Twig {
 
 func readMessage(conn websocket.Conn) {
 	for {
+		_, _, err := conn.NextReader()
+		if err != nil {
+			conn.Close()
+			panic("Twig connection closed" + err.Error())
+
+			// Todo: reconnect to twig
+		}
+
 		// Read payload
 		var message GenericTwigMessage
 		if err := conn.ReadJSON(&message); err != nil {
-			utils.ParsedError(err, "Could not read message from twig", true)
+			println(utils.ParsedError(err, "Could not read message from twig", true))
 
-			panic(err)
+			continue
 		}
 
 		switch message.Op {
 		case 0:
-			// Dispatch event
+			// Dispatch event (we don't need it :3)
 
 		case 1:
-			// Hola event
+			// Hola event handled above
 
 		case 4:
 			println("Heartbeat acknowledged", string(message.Data))
@@ -97,7 +110,6 @@ func readMessage(conn websocket.Conn) {
 
 func heartbeat(conn websocket.Conn, interval time.Duration) {
 	for {
-		time.Sleep(interval)
 		if err := conn.WriteJSON(map[string]interface{}{
 			"op": 3,
 			"d": map[string]interface{}{
@@ -106,5 +118,6 @@ func heartbeat(conn websocket.Conn, interval time.Duration) {
 		}); err != nil {
 			utils.ParsedError(err, "Could not start heartbeat to twig", true)
 		}
+		time.Sleep(interval)
 	}
 }
