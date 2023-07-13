@@ -8,6 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"strings"
 
 	"github.com/urfave/cli/v2"
 )
@@ -79,6 +80,10 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 
 		var obj VectorMessage
 		if err := json.Unmarshal([]byte(message), &obj); err != nil {
+			if strings.Contains(message, "ERROR") {
+				println("Error occurred in vector", message)
+			}
+
 			continue
 		}
 
