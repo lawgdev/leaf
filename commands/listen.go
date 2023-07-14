@@ -76,27 +76,49 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 			return
 		}
 
-		var message = string(buf[:n])
+		// We're making this into an array because vector sometimes sends multiple messages
+		var message = delete_empty(strings.Split(string(buf[:n]), "\n"))
 
-		var obj VectorMessage
-		if err := json.Unmarshal([]byte(message), &obj); err != nil {
-			if strings.Contains(message, "ERROR") {
-				println("Error occurred in vector", message)
+		for _, msg := range message {
+			if msg == "" {
+				continue
 			}
 
-			continue
-		}
+			var obj VectorMessage
+			if err := json.Unmarshal([]byte(msg), &obj); err != nil {
+				if strings.Contains(msg, "ERROR") {
+					println("Error occurred in vector", message)
+				}
 
-		twigClient.WS.WriteJSON(twig.CreateLogMessage{
-			Op: 5,
-			Data: twig.CreateLogData{
-				Message:   obj.Message,
-				Level:     obj.Level,
-				Namespace: obj.Namespace,
-				FeedName:  obj.FeedName,
-				// Todo: make this real data
-				Source: "docker_logs",
-			},
-		})
+				println("Failed to parse message", err.Error())
+				println(msg)
+
+				continue
+			}
+
+			if err := twigClient.WS.WriteJSON(twig.CreateLogMessage{
+				Op: 5,
+				Data: twig.CreateLogData{
+					Message:   obj.Message,
+					Level:     obj.Level,
+					Namespace: obj.Namespace,
+					FeedName:  obj.FeedName,
+					// Todo: make this real data
+					Source: "docker_logs",
+				},
+			}); err != nil {
+				log.Println(err)
+			}
+		}
 	}
+}
+
+func delete_empty(s []string) []string {
+	var r []string
+	for _, str := range s {
+		if str != "" {
+			r = append(r, str)
+		}
+	}
+	return r
 }
