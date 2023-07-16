@@ -1,5 +1,5 @@
 brews:
-    name: leaf
+  - name: leaf
     url_template: "https://github.com/lawgdev/leaf/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
 
     commit_author:
