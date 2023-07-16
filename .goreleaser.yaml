@@ -1,0 +1,17 @@
+brews:
+    name: leaf
+    url_template: "https://github.com/lawgdev/leaf/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+
+    commit_author:
+      name: lawg
+      email: bot@lawg.dev
+
+    caveats: "Make sure to have a lawg.dev account"
+
+    homepage: "https://lawg.dev/"
+    description: "Connect your application's logs and feed them into Lawg in realtime."
+
+    repository:
+      owner: lawg
+      name: homebrew-tap
+      branch: main
