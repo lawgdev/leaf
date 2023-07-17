@@ -12,6 +12,6 @@ brews:
     description: "Connect your application's logs and feed them into Lawg in realtime."
 
     repository:
-      owner: lawg
+      owner: lawgdev
       name: homebrew-tap
       branch: main
