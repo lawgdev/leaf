@@ -7,8 +7,7 @@ Leaf is a simple and lightweight CLI tool for generating, running, and managing 
 ### Homebrew
 
 ```bash
-brew tap lawg/leaf
-brew install leaf
+brew install lawgdev/tap/leaf
 ```
 
 ### Manual
