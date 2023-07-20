@@ -87,7 +87,7 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 			var obj VectorMessage
 			if err := json.Unmarshal([]byte(msg), &obj); err != nil {
 				if strings.Contains(msg, "ERROR") {
-					println("Error occurred in vector", message)
+					println("Error occurred in vector", msg)
 				}
 
 				println("Failed to parse message", err.Error())

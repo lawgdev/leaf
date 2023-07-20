@@ -37,6 +37,11 @@ func main() {
 				Usage:  "Configure lawg to start on systemctl",
 				Action: commands.Upstart,
 			},
+			{
+				Name:   "whoami",
+				Usage:  "Get your user information",
+				Action: commands.WhoAmI,
+			},
 		},
 	}
 
