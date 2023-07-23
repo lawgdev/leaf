@@ -10,6 +10,12 @@ Leaf is a simple and lightweight CLI tool for generating, running, and managing 
 brew install lawgdev/tap/leaf
 ```
 
+### Windows
+
+1. Download the latest release from the [releases page](https://github.com/lawgdev/leaf/releases)
+2. Extract the zip file
+3. Move the `leaf.exe` file to a directory in your `PATH` environment variable or add the directory to your `PATH` environment variable. (We recommend putting it in your User directory)
+
 ### Manual
 
 ```bash
