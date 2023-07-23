@@ -18,12 +18,14 @@ func Redis(feed utils.Feed, project utils.Project) error {
 
 	// ask for redis URL
 	var redisUrl = ""
-	survey.AskOne(&survey.Input{
+	if err := survey.AskOne(&survey.Input{
 		Message: "Redis URL:",
 		Suggest: func(toComplete string) []string {
 			return []string{"redis://localhost:6379/0", "redis://redis:6379/0", "redis://0.0.0.0:6379/0"}
 		},
-	}, &redisUrl, survey.WithValidator(survey.Required))
+	}, &redisUrl, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to get Redis URL", true)
+	}
 
 	var parsedVectorConfig = utils.ParseVectorConfig(vectorGeneratedConfig)
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "redis://127.0.0.1:6379/0", redisUrl, 1)

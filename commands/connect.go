@@ -96,10 +96,12 @@ func Connect(ctx *cli.Context) error {
 	}
 
 	var selectedProjectNamespace = ""
-	survey.AskOne(&survey.Select{
+	if err := survey.AskOne(&survey.Select{
 		Message: "Select Project",
 		Options: projects,
-	}, &selectedProjectNamespace, survey.WithValidator(survey.Required))
+	}, &selectedProjectNamespace, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to select project", true)
+	}
 
 	// get the selected project by namespace
 	var selectedProject utils.Project
@@ -123,10 +125,12 @@ func Connect(ctx *cli.Context) error {
 		return nil
 	}
 
-	survey.AskOne(&survey.Select{
+	if err := survey.AskOne(&survey.Select{
 		Message: "Select An Application Feed",
 		Options: feeds,
-	}, &selectedProjectNamespace, survey.WithValidator(survey.Required))
+	}, &selectedProjectNamespace, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to select application feed", true)
+	}
 
 	var selectedFeed utils.Feed
 	for _, feed := range selectedProject.Feeds {
@@ -141,10 +145,12 @@ func Connect(ctx *cli.Context) error {
 	}
 
 	var selectedSourceName = ""
-	survey.AskOne(&survey.Select{
+	if err := survey.AskOne(&survey.Select{
 		Message: "Select A Source",
 		Options: sourceNames,
-	}, &selectedSourceName, survey.WithValidator(survey.Required))
+	}, &selectedSourceName, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to select source", true)
+	}
 
 	var selectedSource Source
 	for _, source := range supportedSources {

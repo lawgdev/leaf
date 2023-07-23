@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-
 	app := &cli.App{
 		Name:  "lawg",
 		Usage: "your logs, one place.",

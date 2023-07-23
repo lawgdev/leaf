@@ -18,17 +18,21 @@ func AwsECSMetrics(feed utils.Feed, project utils.Project) error {
 
 	// ask for endpoint URL
 	var endpoint = ""
-	survey.AskOne(&survey.Input{
+	if err := survey.AskOne(&survey.Input{
 		Message: "Endpoint URL:",
 		Suggest: func(toComplete string) []string {
 			return []string{"http://169.254.170.2/v2"}
 		},
-	}, &endpoint, survey.WithValidator(survey.Required))
+	}, &endpoint, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to get endpoint URL", true)
+	}
 
 	var namespace = ""
-	survey.AskOne(&survey.Input{
+	if err := survey.AskOne(&survey.Input{
 		Message: "Namespace (or empty for disabled):",
-	}, &namespace)
+	}, &namespace); err != nil {
+		return utils.ParsedError(err, "Failed to get namespace", true)
+	}
 
 	var parsedVectorConfig = utils.ParseVectorConfig(vectorGeneratedConfig)
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "http://169.254.170.2/v2", endpoint, 1)

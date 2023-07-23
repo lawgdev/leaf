@@ -21,12 +21,14 @@ func File(feed utils.Feed, project utils.Project) error {
 
 	for askForPaths {
 		var includePath = ""
-		survey.AskOne(&survey.Input{
+		if err := survey.AskOne(&survey.Input{
 			Message: "Include Path:",
 			Suggest: func(toComplete string) []string {
 				return []string{"/var/log/**/*.log"}
 			},
-		}, &includePath)
+		}, &includePath); err != nil {
+			return utils.ParsedError(err, "Failed to get include path", true)
+		}
 
 		if includePath == "" && len(includePaths) > 0 {
 			askForPaths = false
@@ -45,12 +47,14 @@ func File(feed utils.Feed, project utils.Project) error {
 
 	for askForExcludePaths {
 		var excludePath = ""
-		survey.AskOne(&survey.Input{
+		if err := survey.AskOne(&survey.Input{
 			Message: "Exclude Path (optional):",
 			Suggest: func(toComplete string) []string {
 				return []string{"/var/log/binary-file.log"}
 			},
-		}, &excludePath)
+		}, &excludePath); err != nil {
+			return utils.ParsedError(err, "Failed to get exclude path", true)
+		}
 
 		if excludePath == "" {
 			askForPaths = false

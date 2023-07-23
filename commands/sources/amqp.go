@@ -18,17 +18,21 @@ func AMQP(feed utils.Feed, project utils.Project) error {
 
 	// ask for amqp URL
 	var amqpUrl = ""
-	survey.AskOne(&survey.Input{
+	if err := survey.AskOne(&survey.Input{
 		Message: "AMQP URL:",
 		Suggest: func(toComplete string) []string {
 			return []string{"amqp://default:pass@127.0.0.1:5672/%2f", "amqp://default:pass@0.0.0.0:5672/%2f"}
 		},
-	}, &amqpUrl, survey.WithValidator(survey.Required))
+	}, &amqpUrl, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to get AMQP URL", true)
+	}
 
 	var queueName = ""
-	survey.AskOne(&survey.Input{
+	if err := survey.AskOne(&survey.Input{
 		Message: "Queue name (or leave blank for all):",
-	}, &queueName)
+	}, &queueName); err != nil {
+		return utils.ParsedError(err, "Failed to get queue name", true)
+	}
 
 	var parsedVectorConfig = utils.ParseVectorConfig(vectorGeneratedConfig)
 	parsedVectorConfig = strings.Replace(parsedVectorConfig, "amqp://user:password@127.0.0.1:5672/%2f?timeout=10", amqpUrl, 1)

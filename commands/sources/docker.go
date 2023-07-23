@@ -30,10 +30,12 @@ func DockerLogs(feed utils.Feed, project utils.Project) error {
 	}
 
 	var selectedContainer string
-	survey.AskOne(&survey.Select{
+	if err := survey.AskOne(&survey.Select{
 		Message: "Select a container:",
 		Options: containerNames,
-	}, &selectedContainer, survey.WithValidator(survey.Required))
+	}, &selectedContainer, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to select container", true)
+	}
 
 	selectedContainer = strings.Split(selectedContainer, " ")[0]
 

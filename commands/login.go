@@ -10,7 +10,9 @@ import (
 
 func Login(ctx *cli.Context) error {
 	token := ""
-	survey.AskOne(&survey.Input{Message: "Enter your lawg.dev token (https://app.lawg.dev/user/settings):"}, &token, survey.WithValidator(survey.Required))
+	if err := survey.AskOne(&survey.Input{Message: "Enter your lawg.dev token (https://app.lawg.dev/user/settings):"}, &token, survey.WithValidator(survey.Required)); err != nil {
+		return utils.ParsedError(err, "Failed to get token", true)
+	}
 
 	spinner := utils.Spinner.AddSpinner("Authenticating with lawg")
 	utils.Spinner.Start()
