@@ -14,12 +14,15 @@ type Twig struct {
 	Token string
 }
 
-func Connect(token string, listeningTo []string) *Twig {
+func Connect(token string, listeningTo []string, onDisconnect func()) *Twig {
 	client := websocket.Dialer{}
 
 	conn, _, err := client.Dial("ws://100.105.87.12:4000/ws", nil)
 	if err != nil {
-		panic(utils.ParsedError(err, "Could not connect to twig", true).Error())
+		println(utils.ParsedError(err, "Could not connect to twig", true).Error())
+		onDisconnect()
+
+		return nil
 	}
 
 	println("Connected to twig")
@@ -65,7 +68,7 @@ func Connect(token string, listeningTo []string) *Twig {
 
 	println("Authenticated to twig")
 
-	go readMessage(*conn)
+	go readMessage(*conn, onDisconnect)
 	go heartbeat(*conn, time.Duration(holaMessage.Data.HeartbeatInterval)*time.Millisecond)
 
 	return &Twig{
@@ -74,14 +77,15 @@ func Connect(token string, listeningTo []string) *Twig {
 	}
 }
 
-func readMessage(conn websocket.Conn) {
+func readMessage(conn websocket.Conn, onDisconnect func()) {
 	for {
 		_, _, err := conn.NextReader()
 		if err != nil {
 			conn.Close()
-			panic("Twig connection closed" + err.Error())
+			println("Twig connection closed" + err.Error())
+			onDisconnect()
 
-			// Todo: reconnect to twig
+			return
 		}
 
 		// Read payload

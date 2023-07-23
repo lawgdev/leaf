@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"time"
 
 	"github.com/urfave/cli/v2"
 )
@@ -36,9 +37,12 @@ func Listen(ctx *cli.Context) error {
 		return utils.ParsedError(err, "Failed to get state", true)
 	}
 
+	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml", "-q")
+
 	// Connect to websocket
-	var twigClient = twig.Connect(state.Token, origins)
-	var cmd = exec.Command("vector", "-c", homePath+"/.leaf/configs/*.toml")
+	var twigClient = twig.Connect(state.Token, origins, func() {
+		handleDisconnection(ctx, cmd.Process)
+	})
 
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
@@ -86,12 +90,7 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 
 			var obj VectorMessage
 			if err := json.Unmarshal([]byte(msg), &obj); err != nil {
-				if strings.Contains(msg, "ERROR") {
-					println("Error occurred in vector", msg)
-				}
-
 				println("Failed to parse message", err.Error())
-				println(msg)
 
 				continue
 			}
@@ -111,6 +110,19 @@ func printOutput(pipe io.Reader, twigClient *twig.Twig) {
 			}
 		}
 	}
+}
+
+func handleDisconnection(ctx *cli.Context, vectorProcess *os.Process) {
+	// Kill vector if its not nil
+	if vectorProcess != nil {
+		if err := vectorProcess.Kill(); err != nil {
+			println("Failed to kill vector process", err.Error())
+		}
+	}
+	println("Disconnected from twig, attempting to reconnect in 5 seconds")
+
+	time.Sleep(5 * time.Second)
+	Listen(ctx)
 }
 
 func delete_empty(s []string) []string {
