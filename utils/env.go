@@ -1,5 +1,5 @@
 package utils
 
 const (
-	API_URL_V1 = "http://100.105.87.12:8080/v1"
+	API_URL_V1 = "https://api.lawg.dev/v1"
 )

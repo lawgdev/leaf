@@ -17,7 +17,7 @@ type Twig struct {
 func Connect(token string, listeningTo []string, onDisconnect func()) *Twig {
 	client := websocket.Dialer{}
 
-	conn, _, err := client.Dial("ws://100.105.87.12:4000/ws", nil)
+	conn, _, err := client.Dial("wss://twig.lawg.dev/ws", nil)
 	if err != nil {
 		println(utils.ParsedError(err, "Could not connect to twig", true).Error())
 		onDisconnect()
